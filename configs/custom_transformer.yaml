@@ -1,0 +1,59 @@
+# from https://github.com/CompVis/taming-transformers/pull/123/commits/9c5b0d22e1c07f68aaacd2ecc6552b3f5cd9d48b
+model:
+  base_learning_rate: 4.5e-06
+  target: taming.models.cond_transformer.Net2NetTransformer
+  params:
+    unconditional: True
+    cond_stage_key: image
+    transformer_config:
+      target: taming.modules.transformer.mingpt.GPT
+      params:
+        vocab_size: 1024
+        block_size: 512
+        n_layer: 24
+        n_head: 16
+        n_embd: 1024
+    first_stage_config:
+      target: taming.models.vqgan.VQModel
+      params:
+        ckpt_path: logs/2023-02-21T17-16-06_custom_vqgan/checkpoints/last.ckpt
+        embed_dim: 256
+        n_embed: 1024
+        ddconfig:
+          double_z: false
+          z_channels: 256
+          resolution: 256
+          in_channels: 3
+          out_ch: 3
+          ch: 128
+          ch_mult:
+          - 1
+          - 1
+          - 2
+          - 2
+          - 4
+          num_res_blocks: 2
+          attn_resolutions:
+          - 16
+          dropout: 0.0
+        lossconfig:
+          target: taming.modules.losses.DummyLoss
+    cond_stage_config:
+      target: taming.models.dummy_cond_stage.DummyCondStage
+      params:
+        dummyparam: False
+data:
+  target: main.DataModuleFromConfig
+  params:
+    batch_size: 5
+    num_workers: 8
+    train:
+      target: taming.data.custom.CustomTrain
+      params:
+        training_images_list_file: customdata/train.txt
+        size: 256
+    validation:
+      target: taming.data.custom.CustomTest
+      params:
+        test_images_list_file: customdata/test.txt
+        size: 256

@@ -1,0 +1,6 @@
+__pycache__
+logs
+taming_transformers.egg-info
+customdata/train.txt
+customdata/test.txt
+vgg.pth
